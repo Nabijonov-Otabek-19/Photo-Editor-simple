@@ -4,15 +4,19 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.PointF
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.widget.FrameLayout.LayoutParams
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doOnTextChanged
 import uz.gita.myphotoeditor_bek.data.AddViewData
 import uz.gita.myphotoeditor_bek.databinding.ActivityMainBinding
 import uz.gita.myphotoeditor_bek.databinding.ContainerViewBinding
@@ -40,10 +44,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             addText.setOnClickListener {
-                //
+                addViewData = AddViewData.TextData("Hello world", 16f, Color.BLACK)
             }
 
-            addImage.setOnClickListener {
+            binding.addImage.setOnClickListener {
                 pickImageFromGallery()
             }
 
@@ -110,21 +114,32 @@ class MainActivity : AppCompatActivity() {
             }
 
             is AddViewData.TextData -> {
-                TextView(this).apply { }
+                TextView(this).apply {
+                    text = (addViewData as AddViewData.TextData).st
+                    gravity = Gravity.CENTER
+                    textSize = (addViewData as AddViewData.TextData).defTextSize
+                    setTextColor((addViewData as AddViewData.TextData).defColor)
+                }
             }
         }
 
         val containerBinding = ContainerViewBinding.inflate(layoutInflater, binding.editor, false)
 
-        containerBinding.root.x = targetX - 50.px
-        containerBinding.root.y = targetY - 30.px
+        containerBinding.root.x = targetX - _view.x / 2
+        containerBinding.root.y = targetY - _view.y / 2
+
+        val layoutParams = LayoutParams(
+            LayoutParams.WRAP_CONTENT,
+            LayoutParams.WRAP_CONTENT
+        )
 
         containerBinding.viewContainer.addView(_view)
-        binding.editor.addView(containerBinding.root, 100.px, 60.px)
+        binding.editor.addView(containerBinding.root, layoutParams)
         selectView(containerBinding)
 
         containerBinding.buttonCancel.setOnClickListener {
             binding.editor.removeView(containerBinding.root)
+            binding.edtText.visibility = View.GONE
         }
 
         var lastPoint = PointF()
@@ -169,8 +184,6 @@ class MainActivity : AppCompatActivity() {
                             containerBinding.root.scaleX *= k.toFloat()
                             containerBinding.root.scaleY *= k.toFloat()
                         }
-
-                        //containerBinding.root.rotation += alpha
                     }
                 }
             }
@@ -178,7 +191,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun changeText(txt: TextView) {
+        binding.edtText.doOnTextChanged { text, start, before, count ->
+            txt.text = text
+        }
+    }
+
     private fun selectView(view: ContainerViewBinding) {
+        val childView = view.viewContainer.getChildAt(0)
+        if (childView is TextView) {
+            binding.edtText.visibility = View.VISIBLE
+            changeText(childView)
+        }
+
         if (lastSelectView != view) unSelect()
         lastSelectView = view
         lastSelectView!!.apply {
@@ -188,6 +213,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun unSelect() {
+        binding.edtText.visibility = View.GONE
+
         lastSelectView?.let {
             it.viewContainer.isSelected = false
             it.buttonCancel.visibility = View.GONE

@@ -10,6 +10,7 @@ sealed interface AddViewData {
 
     data class TextData(
         val st: String,
-        val defTextSize: Int
+        val defTextSize: Float,
+        val defColor: Int
     ) : AddViewData
 }

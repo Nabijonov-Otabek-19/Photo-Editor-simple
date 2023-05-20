@@ -11,6 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@id/bottomPanel"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.appcompat.widget.AppCompatImageView
@@ -19,6 +21,17 @@
             android:layout_height="match_parent" />
 
     </FrameLayout>
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/edtText"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Type here"
+        android:textColorHint="@color/pink"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/bottomPanel"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottomPanel"
