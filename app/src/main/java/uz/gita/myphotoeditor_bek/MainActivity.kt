@@ -66,7 +66,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun pickImageFromGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         startActivityForResult(intent, RESULT_LOAD_IMAGE)
@@ -76,8 +75,7 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && data != null) {
             val selectedImage: Uri? = data.data
-            val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, selectedImage)
-            binding.mainImage.setImageBitmap(bitmap)
+            binding.mainImage.setImageURI(selectedImage)
         }
     }
 
