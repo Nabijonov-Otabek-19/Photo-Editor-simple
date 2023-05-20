@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_gray"
     tools:context=".MainActivity">
 
     <FrameLayout
@@ -41,6 +40,19 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/addFromCamera"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/addFromCamera"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:background="@drawable/bg_button"
+            android:text="Camera"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintLeft_toRightOf="@id/addGlasses"
             app:layout_constraintRight_toLeftOf="@id/addImage"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -50,10 +62,10 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
             android:background="@drawable/bg_button"
-            android:text="add Image"
+            android:text="Gallery"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_weight="1"
-            app:layout_constraintLeft_toRightOf="@id/addGlasses"
+            app:layout_constraintLeft_toRightOf="@id/addFromCamera"
             app:layout_constraintRight_toLeftOf="@id/addText"
             app:layout_constraintTop_toTopOf="parent" />
 

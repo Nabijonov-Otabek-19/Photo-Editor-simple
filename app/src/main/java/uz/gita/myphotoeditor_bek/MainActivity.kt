@@ -1,7 +1,9 @@
 package uz.gita.myphotoeditor_bek
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.PointF
 import android.net.Uri
 import android.os.Bundle
@@ -24,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private var lastSelectView: ContainerViewBinding? = null
 
     private val RESULT_LOAD_IMAGE = 1
+    private val CAMERA_REQUEST = 1888
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,6 +45,10 @@ class MainActivity : AppCompatActivity() {
 
             addImage.setOnClickListener {
                 pickImageFromGallery()
+            }
+
+            addFromCamera.setOnClickListener {
+                pickImageFromCamera()
             }
         }
 
@@ -66,6 +73,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun pickImageFromCamera() {
+        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        startActivityForResult(cameraIntent, CAMERA_REQUEST)
+    }
+
     private fun pickImageFromGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         startActivityForResult(intent, RESULT_LOAD_IMAGE)
@@ -73,9 +85,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        // from gallery
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && data != null) {
             val selectedImage: Uri? = data.data
             binding.mainImage.setImageURI(selectedImage)
+        }
+
+        // from camera
+        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
+            val photo: Bitmap = data?.extras?.get("data") as Bitmap
+            binding.mainImage.setImageBitmap(photo)
         }
     }
 
