@@ -12,7 +12,6 @@ import android.provider.MediaStore
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
-import android.widget.FrameLayout.LayoutParams
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -125,16 +124,11 @@ class MainActivity : AppCompatActivity() {
 
         val containerBinding = ContainerViewBinding.inflate(layoutInflater, binding.editor, false)
 
-        containerBinding.root.x = targetX - _view.x / 2
-        containerBinding.root.y = targetY - _view.y / 2
-
-        val layoutParams = LayoutParams(
-            LayoutParams.WRAP_CONTENT,
-            LayoutParams.WRAP_CONTENT
-        )
+        containerBinding.root.x = targetX - 75.px
+        containerBinding.root.y = targetY - 35.px
 
         containerBinding.viewContainer.addView(_view)
-        binding.editor.addView(containerBinding.root, layoutParams)
+        binding.editor.addView(containerBinding.root, 150.px, 70.px)
         selectView(containerBinding)
 
         containerBinding.buttonCancel.setOnClickListener {
