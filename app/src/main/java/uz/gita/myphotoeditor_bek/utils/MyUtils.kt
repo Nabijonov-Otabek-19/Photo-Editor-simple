@@ -15,6 +15,6 @@ fun lineLength(firstPoint: PointF, secondPoint: PointF): Double {
     return sqrt(((firstPoint.x - secondPoint.x) * (firstPoint.x - secondPoint.x) + (firstPoint.y - secondPoint.y) * (firstPoint.y - secondPoint.y)).toDouble())
 }
 
-fun myLog(message: String) {
+fun logger(message: String) {
     Log.d("AAA", message)
 }
