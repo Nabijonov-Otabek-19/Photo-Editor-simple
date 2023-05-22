@@ -21,7 +21,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout.LayoutParams
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -32,6 +31,7 @@ import uz.gita.myphotoeditor_bek.databinding.ContainerBinding
 import uz.gita.myphotoeditor_bek.utils.lineLength
 import uz.gita.myphotoeditor_bek.utils.logger
 import uz.gita.myphotoeditor_bek.utils.px
+import uz.gita.myphotoeditor_bek.utils.toast
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity() {
         }
         fos?.use {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
-            Toast.makeText(this, "Saved to Gallery", Toast.LENGTH_SHORT).show()
+            toast("Saved to Gallery")
         }
     }
 

@@ -1,8 +1,10 @@
 package uz.gita.myphotoeditor_bek.utils
 
+import android.app.Activity
 import android.content.res.Resources
 import android.graphics.PointF
 import android.util.Log
+import android.widget.Toast
 import kotlin.math.sqrt
 
 val Int.dp: Int
@@ -17,4 +19,8 @@ fun lineLength(firstPoint: PointF, secondPoint: PointF): Double {
 
 fun logger(message: String) {
     Log.d("AAA", message)
+}
+
+fun Activity.toast(message: String) {
+    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }
