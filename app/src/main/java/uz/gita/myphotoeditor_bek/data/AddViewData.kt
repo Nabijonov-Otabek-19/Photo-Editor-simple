@@ -4,8 +4,8 @@ sealed interface AddViewData {
 
     data class EmojiData(
         val imageResID: Int,
-        val defHeight: Int,
-        val defWidth: Int
+        val defWidth: Int,
+        val defHeight: Int
     ) : AddViewData
 
     data class TextData(

@@ -1,32 +1,60 @@
 package uz.gita.myphotoeditor_bek
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.PointF
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout.LayoutParams
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.widget.doOnTextChanged
 import uz.gita.myphotoeditor_bek.data.AddViewData
 import uz.gita.myphotoeditor_bek.databinding.ActivityMainBinding
-import uz.gita.myphotoeditor_bek.databinding.ContainerViewBinding
+import uz.gita.myphotoeditor_bek.databinding.ContainerBinding
 import uz.gita.myphotoeditor_bek.utils.lineLength
 import uz.gita.myphotoeditor_bek.utils.px
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.OutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var addViewData: AddViewData? = null
-    private var lastSelectView: ContainerViewBinding? = null
+    private var lastSelectView: ContainerBinding? = null
 
     private val RESULT_LOAD_IMAGE = 1
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            //logger(it.toString())
+        }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,9 +62,14 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val storagePermission = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+
         binding.apply {
             addGlasses.setOnClickListener {
-                addViewData = AddViewData.EmojiData(R.drawable.glasses, 60.px, 30.px)
+                addViewData = AddViewData.EmojiData(R.drawable.mask, 100.px, 30.px)
             }
 
             addText.setOnClickListener {
@@ -67,6 +100,53 @@ class MainActivity : AppCompatActivity() {
             }
             return@setOnTouchListener true
         }
+
+        binding.btnSave.setOnClickListener {
+            if (storagePermission) {
+                val bitmap = getBitmapFromView(binding.editor)
+                saveMediaToStorage(bitmap)
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+        }
+    }
+
+    // Get bitmap of view
+    private fun getBitmapFromView(view: View): Bitmap {
+        val img = binding.mainImage
+        val bitmap = Bitmap.createBitmap(
+            img.width, img.height, Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        view.draw(canvas)
+        return bitmap
+    }
+
+    // Function to save an Image
+    private fun saveMediaToStorage(bitmap: Bitmap) {
+        val filename = "${System.currentTimeMillis()}.jpg"
+        var fos: OutputStream? = null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            this.contentResolver?.also { resolver ->
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
+                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                }
+                val imageUri: Uri? =
+                    resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                fos = imageUri?.let { resolver.openOutputStream(it) }
+            }
+        } else {
+            val imagesDir =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            val image = File(imagesDir, filename)
+            fos = FileOutputStream(image)
+        }
+        fos?.use {
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+            Toast.makeText(this, "Saved to Gallery", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun pickImageFromGallery() {
@@ -90,6 +170,9 @@ class MainActivity : AppCompatActivity() {
         val _view: View = when (addViewData!!) {
             is AddViewData.EmojiData -> {
                 ImageView(this).apply {
+                    val wid = (addViewData as AddViewData.EmojiData).defWidth
+                    val hei = (addViewData as AddViewData.EmojiData).defHeight
+                    layoutParams = ViewGroup.LayoutParams(wid, hei)
                     setImageResource((addViewData as AddViewData.EmojiData).imageResID)
                 }
             }
@@ -104,14 +187,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val containerBinding = ContainerViewBinding.inflate(layoutInflater, binding.editor, false)
+        val containerBinding = ContainerBinding.inflate(layoutInflater, binding.editor, false)
 
-        containerBinding.root.x = targetX - 75.px
-        containerBinding.root.y = targetY - 35.px
+        containerBinding.root.x = targetX - 50.px
+        containerBinding.root.y = targetY - 30.px
+
+        val layoutParams = LayoutParams(
+            LayoutParams.WRAP_CONTENT,
+            LayoutParams.WRAP_CONTENT
+        )
 
         containerBinding.viewContainer.addView(_view)
-        binding.editor.addView(containerBinding.root, 150.px, 70.px)
+        binding.editor.addView(containerBinding.root, layoutParams)
         selectView(containerBinding)
+
+        binding.btnSave.visibility = View.VISIBLE
 
         containerBinding.buttonCancel.setOnClickListener {
             binding.editor.removeView(containerBinding.root)
@@ -173,7 +263,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun selectView(view: ContainerViewBinding) {
+    private fun selectView(view: ContainerBinding) {
         val childView = view.viewContainer.getChildAt(0)
         if (childView is TextView) {
             binding.edtText.visibility = View.VISIBLE
