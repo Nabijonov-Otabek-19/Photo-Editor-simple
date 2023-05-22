@@ -24,7 +24,7 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.widget.doOnTextChanged
+import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import uz.gita.musicplayer.utils.MyRotationGestureDetector
 import uz.gita.myphotoeditor_bek.adapter.TextColorAdapter
@@ -118,6 +118,13 @@ class MainActivity : AppCompatActivity(), MyRotationGestureDetector.OnRotationGe
 
             btnTextColor.setOnClickListener {
                 setRecyclerItems()
+            }
+
+            binding.edtText.doAfterTextChanged { text ->
+                val childView = lastSelectView!!.viewContainer.getChildAt(0)
+                if (childView is TextView) {
+                    childView.text = text
+                }
             }
         }
 
@@ -286,31 +293,24 @@ class MainActivity : AppCompatActivity(), MyRotationGestureDetector.OnRotationGe
         }
     }
 
-    private fun changeText(txt: TextView) {
-        binding.edtText.doOnTextChanged { text, start, before, count ->
-            txt.text = text
-        }
-    }
-
     private fun selectView(view: ContainerBinding) {
-        val childView = view.viewContainer.getChildAt(0)
-        if (childView is TextView) {
-            binding.textContainer.visibility = View.VISIBLE
-            changeText(childView)
-        }
-
         if (lastSelectView != view) unSelect()
         lastSelectView = view
         lastSelectView!!.apply {
             this.viewContainer.isSelected = true
             this.buttonCancel.visibility = View.VISIBLE
         }
+
+        val childView = lastSelectView?.viewContainer?.getChildAt(0)
+        if (childView is TextView) {
+            binding.textContainer.visibility = View.VISIBLE
+            binding.edtText.hint = "Type something"
+        }
     }
 
     private fun unSelect() {
         binding.textContainer.visibility = View.GONE
         binding.recyclerItems.visibility = View.GONE
-
 
         lastSelectView?.let {
             it.viewContainer.isSelected = false
