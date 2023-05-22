@@ -30,6 +30,7 @@ import uz.gita.myphotoeditor_bek.adapter.TextColorAdapter
 import uz.gita.myphotoeditor_bek.data.AddViewData
 import uz.gita.myphotoeditor_bek.databinding.ActivityMainBinding
 import uz.gita.myphotoeditor_bek.databinding.ContainerBinding
+import uz.gita.myphotoeditor_bek.utils.Constants
 import uz.gita.myphotoeditor_bek.utils.lineLength
 import uz.gita.myphotoeditor_bek.utils.px
 import uz.gita.myphotoeditor_bek.utils.toast
@@ -44,8 +45,6 @@ class MainActivity : AppCompatActivity() {
     private var lastSelectView: ContainerBinding? = null
 
     private val adapter by lazy { TextColorAdapter() }
-
-    private var colorList = ArrayList<Int>()
 
     private val RESULT_LOAD_IMAGE = 1
 
@@ -62,14 +61,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        colorList.add(R.color.black)
-        colorList.add(R.color.light_gray)
-        colorList.add(R.color.pink)
-        colorList.add(R.color.red)
-        colorList.add(R.color.green)
-        colorList.add(R.color.yellow)
-        colorList.add(R.color.blue)
 
         val storagePermission = ContextCompat.checkSelfPermission(
             this,
@@ -134,7 +125,7 @@ class MainActivity : AppCompatActivity() {
     private fun setRecyclerItems() {
         binding.apply {
             recyclerItems.visibility = View.VISIBLE
-            adapter.setData(colorList)
+            adapter.setData(Constants.colorList)
             recyclerItems.adapter = adapter
             recyclerItems.layoutManager =
                 LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
