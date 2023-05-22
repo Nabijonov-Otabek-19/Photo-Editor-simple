@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
+import uz.gita.musicplayer.utils.MyRotationGestureDetector
 import uz.gita.myphotoeditor_bek.adapter.TextColorAdapter
 import uz.gita.myphotoeditor_bek.data.AddViewData
 import uz.gita.myphotoeditor_bek.databinding.ActivityMainBinding
@@ -38,13 +39,19 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MyRotationGestureDetector.OnRotationGestureListener {
 
     private lateinit var binding: ActivityMainBinding
     private var addViewData: AddViewData? = null
     private var lastSelectView: ContainerBinding? = null
 
     private val adapter by lazy { TextColorAdapter() }
+
+    private val mRotationDetector: MyRotationGestureDetector by lazy {
+        MyRotationGestureDetector(
+            this@MainActivity
+        )
+    }
 
     private val RESULT_LOAD_IMAGE = 1
 
@@ -233,6 +240,9 @@ class MainActivity : AppCompatActivity() {
         var oldLength = 0.0
 
         containerBinding.root.setOnTouchListener { _, event ->
+
+            mRotationDetector.onTouchEvent(event)
+
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     selectView(containerBinding)
@@ -305,6 +315,17 @@ class MainActivity : AppCompatActivity() {
         lastSelectView?.let {
             it.viewContainer.isSelected = false
             it.buttonCancel.visibility = View.GONE
+        }
+    }
+
+    override fun onRotation(rotationDetector: MyRotationGestureDetector?) {
+        lastSelectView!!.root.apply {
+            if (rotationDetector != null) {
+                rotation += rotationDetector.angle
+                val cS = scaleX
+                scaleX = rotationDetector.scale * cS
+                scaleY = rotationDetector.scale * cS
+            }
         }
     }
 }
