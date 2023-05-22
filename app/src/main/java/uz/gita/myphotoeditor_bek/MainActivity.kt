@@ -25,11 +25,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
+import androidx.recyclerview.widget.LinearLayoutManager
+import uz.gita.myphotoeditor_bek.adapter.TextColorAdapter
 import uz.gita.myphotoeditor_bek.data.AddViewData
 import uz.gita.myphotoeditor_bek.databinding.ActivityMainBinding
 import uz.gita.myphotoeditor_bek.databinding.ContainerBinding
 import uz.gita.myphotoeditor_bek.utils.lineLength
-import uz.gita.myphotoeditor_bek.utils.logger
 import uz.gita.myphotoeditor_bek.utils.px
 import uz.gita.myphotoeditor_bek.utils.toast
 import java.io.File
@@ -42,11 +43,18 @@ class MainActivity : AppCompatActivity() {
     private var addViewData: AddViewData? = null
     private var lastSelectView: ContainerBinding? = null
 
+    private val adapter by lazy { TextColorAdapter() }
+
+    private var colorList = ArrayList<Int>()
+
     private val RESULT_LOAD_IMAGE = 1
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            logger(it.toString())
+            if (it) {
+                val bitmap = getBitmapFromView(binding.editor)
+                saveMediaToStorage(bitmap)
+            }
         }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -54,6 +62,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        colorList.add(R.color.black)
+        colorList.add(R.color.light_gray)
+        colorList.add(R.color.pink)
+        colorList.add(R.color.red)
+        colorList.add(R.color.green)
+        colorList.add(R.color.yellow)
+        colorList.add(R.color.blue)
 
         val storagePermission = ContextCompat.checkSelfPermission(
             this,
@@ -69,38 +85,59 @@ class MainActivity : AppCompatActivity() {
                 addViewData = AddViewData.TextData("Hello world", 16f, Color.BLACK)
             }
 
-            binding.addImage.setOnClickListener {
+            addImage.setOnClickListener {
                 pickImageFromGallery()
             }
-        }
 
-        binding.editor.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                when (addViewData) {
-                    is AddViewData.EmojiData -> {
-                        addView(event.x, event.y)
-                    }
-
-                    is AddViewData.TextData -> {
-                        addView(event.x, event.y)
-                    }
-
-                    null -> {
-                        unSelect()
-                    }
+            btnSave.setOnClickListener {
+                if (storagePermission) {
+                    val bitmap = getBitmapFromView(binding.editor)
+                    saveMediaToStorage(bitmap)
+                } else {
+                    requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
-                addViewData = null
             }
-            return@setOnTouchListener true
+
+            editor.setOnTouchListener { _, event ->
+                if (event.action == MotionEvent.ACTION_DOWN) {
+                    when (addViewData) {
+                        is AddViewData.EmojiData -> {
+                            addView(event.x, event.y)
+                        }
+
+                        is AddViewData.TextData -> {
+                            addView(event.x, event.y)
+                        }
+
+                        null -> {
+                            unSelect()
+                        }
+                    }
+                    addViewData = null
+                }
+                return@setOnTouchListener true
+            }
+
+            btnTextColor.setOnClickListener {
+                setRecyclerItems()
+            }
         }
 
-        binding.btnSave.setOnClickListener {
-            if (storagePermission) {
-                val bitmap = getBitmapFromView(binding.editor)
-                saveMediaToStorage(bitmap)
-            } else {
-                requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        adapter.setTouchListener {
+            val childView = lastSelectView!!.viewContainer.getChildAt(0)
+            if (childView is TextView) {
+                childView.setTextColor(ContextCompat.getColor(this, it))
             }
+        }
+    }
+
+    private fun setRecyclerItems() {
+        binding.apply {
+            recyclerItems.visibility = View.VISIBLE
+            adapter.setData(colorList)
+            recyclerItems.adapter = adapter
+            recyclerItems.layoutManager =
+                LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
         }
     }
 
@@ -194,11 +231,9 @@ class MainActivity : AppCompatActivity() {
         binding.editor.addView(containerBinding.root, layoutParams)
         selectView(containerBinding)
 
-        binding.btnSave.visibility = View.VISIBLE
-
         containerBinding.buttonCancel.setOnClickListener {
             binding.editor.removeView(containerBinding.root)
-            binding.edtText.visibility = View.GONE
+            binding.textContainer.visibility = View.GONE
         }
 
         var lastPoint = PointF()
@@ -259,7 +294,7 @@ class MainActivity : AppCompatActivity() {
     private fun selectView(view: ContainerBinding) {
         val childView = view.viewContainer.getChildAt(0)
         if (childView is TextView) {
-            binding.edtText.visibility = View.VISIBLE
+            binding.textContainer.visibility = View.VISIBLE
             changeText(childView)
         }
 
@@ -272,7 +307,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun unSelect() {
-        binding.edtText.visibility = View.GONE
+        binding.textContainer.visibility = View.GONE
+        binding.recyclerItems.visibility = View.GONE
+
 
         lastSelectView?.let {
             it.viewContainer.isSelected = false

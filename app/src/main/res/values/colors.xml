@@ -6,6 +6,11 @@
     <color name="dark_gray">#242B2E</color>
     <color name="dark_blue">#03203C</color>
     <color name="light_gray">#758283</color>
+
     <color name="pink">#8D3DAF</color>
+    <color name="green">#00FF0A</color>
+    <color name="blue">#008EFF</color>
+    <color name="red">#FF1100</color>
+    <color name="yellow">#FFE500</color>
 
 </resources>
