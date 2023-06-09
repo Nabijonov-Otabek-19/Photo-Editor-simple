@@ -26,7 +26,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
-import uz.gita.musicplayer.utils.MyRotationGestureDetector
 import uz.gita.myphotoeditor_bek.adapter.TextColorAdapter
 import uz.gita.myphotoeditor_bek.data.AddViewData
 import uz.gita.myphotoeditor_bek.databinding.ActivityMainBinding
@@ -236,9 +235,13 @@ class MainActivity : AppCompatActivity(), MyRotationGestureDetector.OnRotationGe
         binding.editor.addView(containerBinding.root, layoutParams)
         selectView(containerBinding)
 
+        // For saving edited photo
+        binding.btnSave.visibility = View.VISIBLE
+
         containerBinding.buttonCancel.setOnClickListener {
             binding.editor.removeView(containerBinding.root)
             binding.textContainer.visibility = View.GONE
+            binding.recyclerItems.visibility = View.GONE
         }
 
         var lastPoint = PointF()
@@ -309,8 +312,8 @@ class MainActivity : AppCompatActivity(), MyRotationGestureDetector.OnRotationGe
     }
 
     private fun unSelect() {
-        binding.textContainer.visibility = View.GONE
         binding.recyclerItems.visibility = View.GONE
+        binding.textContainer.visibility = View.GONE
 
         lastSelectView?.let {
             it.viewContainer.isSelected = false

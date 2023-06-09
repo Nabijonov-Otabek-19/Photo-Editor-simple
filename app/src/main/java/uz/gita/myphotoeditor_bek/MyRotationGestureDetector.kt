@@ -1,11 +1,11 @@
-package uz.gita.musicplayer.utils
+package uz.gita.myphotoeditor_bek
 
 import android.graphics.PointF
 import android.view.MotionEvent
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
-class MyRotationGestureDetector(private val mListener: MyRotationGestureDetector.OnRotationGestureListener?) {
+class MyRotationGestureDetector(private val mListener: OnRotationGestureListener?) {
 
     // We want rotation only if user puts two fingers
     private var ptrID1: Int
